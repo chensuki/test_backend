@@ -9,6 +9,15 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+/**
+ * 项目控制器
+ *
+ * 路径前缀：/api/projects
+ * 提供：
+ *  - GET  /list        查询项目列表
+ *  - POST /create      新建项目
+ *  - DELETE /delete/{id} 删除项目
+ */
 @RestController
 @RequestMapping("/api/projects")
 public class ProjectController {
@@ -19,19 +28,28 @@ public class ProjectController {
         this.projectService = projectService;
     }
 
-    @GetMapping
+    @GetMapping("/list")
+    /**
+     * 查询项目列表
+     */
     public List<ProjectResult> list() {
         return projectService.list();
     }
 
-    @PostMapping
+    @PostMapping("/create")
     @ResponseStatus(HttpStatus.CREATED)
+    /**
+     * 新建项目
+     */
     public ProjectResult create(@Valid @RequestBody ProjectCreateParam param) {
         return projectService.create(param);
     }
 
-    @DeleteMapping("/{id}")
+    @DeleteMapping("/delete/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
+    /**
+     * 删除项目
+     */
     public void delete(@PathVariable Long id) {
         projectService.delete(id);
     }

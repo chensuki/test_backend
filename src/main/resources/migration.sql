@@ -1,3 +1,7 @@
+-- 数据库迁移脚本：从旧表结构迁移到规范化表结构
+-- 执行前请备份数据库！
+
+-- 1. 创建新的规范化表结构
 -- 项目表
 CREATE TABLE IF NOT EXISTS t_project (
   id bigint PRIMARY KEY AUTO_INCREMENT COMMENT '主键ID',
@@ -31,3 +35,37 @@ CREATE TABLE IF NOT EXISTS t_timesheet (
     ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='工时记录表';
 
+-- 2. 迁移现有数据（如果存在旧表）
+-- 迁移项目数据
+INSERT INTO t_project (id, name, description, create_time, create_user, deleted)
+SELECT 
+    id, 
+    name, 
+    description, 
+    NOW() as create_time, 
+    0 as create_user, 
+    0 as deleted
+FROM projects 
+WHERE NOT EXISTS (SELECT 1 FROM t_project WHERE t_project.id = projects.id);
+
+-- 迁移工时数据
+INSERT INTO t_timesheet (id, project_id, work_date, hours, notes, create_time, create_user, deleted)
+SELECT 
+    t.id, 
+    t.project_id, 
+    t.work_date, 
+    t.hours, 
+    t.notes, 
+    NOW() as create_time, 
+    0 as create_user, 
+    0 as deleted
+FROM timesheets t
+WHERE NOT EXISTS (SELECT 1 FROM t_timesheet WHERE t_timesheet.id = t.id);
+
+-- 3. 验证数据迁移
+SELECT 'Projects migrated:' as info, COUNT(*) as count FROM t_project;
+SELECT 'Timesheets migrated:' as info, COUNT(*) as count FROM t_timesheet;
+
+-- 4. 删除旧表（谨慎操作！请确认数据迁移成功后再执行）
+DROP TABLE IF EXISTS timesheets;
+DROP TABLE IF EXISTS projects;
