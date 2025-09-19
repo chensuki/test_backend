@@ -9,6 +9,15 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+/**
+ * 工时控制器
+ *
+ * 路径前缀：/api/timesheets
+ * 提供：
+ *  - GET  /list           查询工时列表（包含项目）
+ *  - POST /create         新建工时记录
+ *  - DELETE /delete/{id}  删除工时记录
+ */
 @RestController
 @RequestMapping("/api/timesheets")
 public class TimesheetController {
@@ -19,19 +28,28 @@ public class TimesheetController {
         this.timesheetService = timesheetService;
     }
 
-    @GetMapping
+    @GetMapping("/list")
+    /**
+     * 查询工时列表
+     */
     public List<TimesheetResult> list() {
         return timesheetService.list();
     }
 
-    @PostMapping
+    @PostMapping("/create")
     @ResponseStatus(HttpStatus.CREATED)
+    /**
+     * 新建工时记录
+     */
     public void create(@Valid @RequestBody TimesheetCreateParam param) {
         timesheetService.create(param);
     }
 
-    @DeleteMapping("/{id}")
+    @DeleteMapping("/delete/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
+    /**
+     * 删除工时记录
+     */
     public void delete(@PathVariable Long id) {
         timesheetService.delete(id);
     }
