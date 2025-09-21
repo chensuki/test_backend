@@ -13,9 +13,12 @@ import java.time.LocalDateTime;
 @Setter
 public class ProjectEntity {
     /** 项目ID */
+    /** 项目ID */
     private Long id;
     /** 项目名称 */
+    /** 项目名称 */
     private String name;
+    /** 项目描述（可空） */
     /** 项目描述（可空） */
     private String description;
     /** 创建时间 */
