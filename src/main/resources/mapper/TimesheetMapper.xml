@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.test.backend.repository.TimesheetRepository">
+
+    <!-- 工时记录结果映射 -->
+    <resultMap id="TimesheetResultMap" type="com.test.backend.entity.TimesheetEntity">
+        <id column="id" property="id" jdbcType="BIGINT"/>
+        <result column="project_id" property="projectId" jdbcType="BIGINT"/>
+        <result column="work_date" property="workDate" jdbcType="DATE"/>
+        <result column="hours" property="hours" jdbcType="DECIMAL"/>
+        <result column="notes" property="notes" jdbcType="LONGVARCHAR"/>
+        <result column="create_time" property="createTime" jdbcType="TIMESTAMP"/>
+        <result column="create_user" property="createUser" jdbcType="BIGINT"/>
+        <result column="update_time" property="updateTime" jdbcType="TIMESTAMP"/>
+        <result column="update_user" property="updateUser" jdbcType="BIGINT"/>
+        <result column="deleted" property="deleted" jdbcType="TINYINT"/>
+    </resultMap>
+
+    <!-- 项目结果映射 -->
+    <resultMap id="ProjectResultMap" type="com.test.backend.entity.ProjectEntity">
+        <id column="p_id" property="id" jdbcType="BIGINT"/>
+        <result column="p_name" property="name" jdbcType="VARCHAR"/>
+        <result column="p_description" property="description" jdbcType="LONGVARCHAR"/>
+        <result column="p_create_time" property="createTime" jdbcType="TIMESTAMP"/>
+        <result column="p_create_user" property="createUser" jdbcType="BIGINT"/>
+        <result column="p_update_time" property="updateTime" jdbcType="TIMESTAMP"/>
+        <result column="p_update_user" property="updateUser" jdbcType="BIGINT"/>
+        <result column="p_deleted" property="deleted" jdbcType="TINYINT"/>
+    </resultMap>
+
+    <!-- 工时与项目联合结果映射 -->
+    <resultMap id="TimesheetWithProjectResultMap" type="com.test.backend.repository.TimesheetWithProject">
+        <constructor>
+            <arg javaType="com.test.backend.entity.TimesheetEntity" resultMap="TimesheetResultMap"/>
+            <arg javaType="com.test.backend.entity.ProjectEntity" resultMap="ProjectResultMap"/>
+        </constructor>
+    </resultMap>
+
+    <!-- 工时基础字段 -->
+    <sql id="Timesheet_Column_List">
+        t.id, t.project_id, t.work_date, t.hours, t.notes, 
+        t.create_time, t.create_user, t.update_time, t.update_user, t.deleted
+    </sql>
+
+    <!-- 项目基础字段（带别名） -->
+    <sql id="Project_Column_List">
+        p.id as p_id, p.name as p_name, p.description as p_description,
+        p.create_time as p_create_time, p.create_user as p_create_user, 
+        p.update_time as p_update_time, p.update_user as p_update_user, p.deleted as p_deleted
+    </sql>
+
+    <!-- 查询所有工时记录（包含项目信息） -->
+    <select id="findAllWithProject" resultMap="TimesheetWithProjectResultMap">
+        SELECT 
+        <include refid="Timesheet_Column_List"/>,
+        <include refid="Project_Column_List"/>
+        FROM t_timesheet t
+        INNER JOIN t_project p ON p.id = t.project_id AND p.deleted = 0
+        WHERE t.deleted = 0
+        ORDER BY t.id DESC
+    </select>
+
+    <!-- 插入工时记录 -->
+    <insert id="insert" parameterType="com.test.backend.entity.TimesheetEntity" 
+            useGeneratedKeys="true" keyProperty="id" keyColumn="id">
+        INSERT INTO t_timesheet (
+            project_id, 
+            work_date, 
+            hours, 
+            notes, 
+            create_time, 
+            create_user, 
+            deleted
+        ) VALUES (
+            #{projectId}, 
+            #{workDate}, 
+            #{hours}, 
+            #{notes}, 
+            #{createTime,jdbcType=TIMESTAMP}, 
+            #{createUser,jdbcType=BIGINT}, 
+            #{deleted,jdbcType=TINYINT}
+        )
+    </insert>
+
+    <!-- 软删除工时记录 -->
+    <update id="deleteById" parameterType="java.lang.Long">
+        UPDATE t_timesheet 
+        SET deleted = 1, 
+            update_time = NOW() 
+        WHERE id = #{id}
+    </update>
+
+</mapper>

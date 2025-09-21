@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.test.backend.repository.ProjectRepository">
+
+    <!-- 结果映射 -->
+    <resultMap id="ProjectResultMap" type="com.test.backend.entity.ProjectEntity">
+        <id column="id" property="id" jdbcType="BIGINT"/>
+        <result column="name" property="name" jdbcType="VARCHAR"/>
+        <result column="description" property="description" jdbcType="LONGVARCHAR"/>
+        <result column="create_time" property="createTime" jdbcType="TIMESTAMP"/>
+        <result column="create_user" property="createUser" jdbcType="BIGINT"/>
+        <result column="update_time" property="updateTime" jdbcType="TIMESTAMP"/>
+        <result column="update_user" property="updateUser" jdbcType="BIGINT"/>
+        <result column="deleted" property="deleted" jdbcType="TINYINT"/>
+    </resultMap>
+
+    <!-- 基础字段 -->
+    <sql id="Base_Column_List">
+        id, name, description, create_time, create_user, update_time, update_user, deleted
+    </sql>
+
+    <!-- 查询所有未删除的项目 -->
+    <select id="findAll" resultMap="ProjectResultMap">
+        SELECT 
+        <include refid="Base_Column_List"/>
+        FROM t_project 
+        WHERE deleted = 0 
+        ORDER BY id DESC
+    </select>
+
+    <!-- 根据ID查询项目 -->
+    <select id="findById" parameterType="java.lang.Long" resultMap="ProjectResultMap">
+        SELECT 
+        <include refid="Base_Column_List"/>
+        FROM t_project 
+        WHERE id = #{id} AND deleted = 0
+    </select>
+
+    <!-- 插入项目 -->
+    <insert id="insert" parameterType="com.test.backend.entity.ProjectEntity" 
+            useGeneratedKeys="true" keyProperty="id" keyColumn="id">
+        INSERT INTO t_project (
+            name, 
+            description, 
+            create_time, 
+            create_user, 
+            deleted
+        ) VALUES (
+            #{name}, 
+            #{description}, 
+            #{createTime,jdbcType=TIMESTAMP}, 
+            #{createUser,jdbcType=BIGINT}, 
+            #{deleted,jdbcType=TINYINT}
+        )
+    </insert>
+
+    <!-- 软删除项目 -->
+    <update id="deleteById" parameterType="java.lang.Long">
+        UPDATE t_project 
+        SET deleted = 1, 
+            update_time = NOW() 
+        WHERE id = #{id}
+    </update>
+
+</mapper>
